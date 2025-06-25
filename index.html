@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Interactive Quiz Application</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 48rem;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .quiz-content {
+            padding: 2rem;
+        }
+
+        .question-counter {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .question {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .answers {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .answer-btn {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .answer-btn:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+        }
+
+        .answer-btn.selected {
+            background: #eff6ff;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .answer-btn.correct {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            color: #15803d;
+        }
+
+        .answer-btn.incorrect {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #dc2626;
+        }
+
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .next-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .next-btn:hover.active {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+        }
+
+        .score-display {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #4f46e5;
+        }
+
+        .results {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .results-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .results-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .results-score {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .performance-text {
+            font-size: 1rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            }
+
+        .restart-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                margin: 0.5rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .title {
+                font-size: 1.5rem;
+            }
+            
+            .quiz-content {
+                padding: 1.5rem;
+            }
+            
+            .question {
+                font-size: 1.125rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+  
+    </style>
+<body>
+    <div class="container">
+        <div class="header"> 
+            <h1 class="title">Interactive Quiz</h1>
+            <p class="subtitle">Test your knowledge with our challenging questions</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="quiz-content" id="quiz-content">
+            <div class="question-counter">
+                <span id="current-question">1</span> of <span id="total-questions">10</span>
+            </div>
+            
+            <div class="question fade-in" id="question">
+                Loading question...
+            </div>
+            
+            <div class="answers" id="answers">
+                <!-- Answers will be loaded dynamically -->
+            </div>
+            
+            <div class="controls">
+                <div class="score-display">
+                    Score: <span id="current-score">0</span>
+                </div>
+                <button class="next-btn" id="next-btn">Next Question</button>
+            </div>
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            <div class="results-icon" id="results-icon">🎉</div>
+            <h2 class="results-title">Quiz Complete!</h2>
+            <p class="results-score">
+                Your Score: <span id="final-score">0</span> out of <span id="final-total">10</span>
+            </p>
+            <p class="performance-text" id="performance-text">Great job!</p>
+            <button class="restart-btn" id="restart-btn">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data
+        const quizData = [
+            {
+                question: "What is the capital of France?",
+                answers: ["London", "Berlin", "Paris", "Madrid"],
+                correct: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                answers: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correct: 1
+            },
+            {
+                question: "What is 15 + 27?",
+                answers: ["42", "41", "43", "40"],
+                correct: 0
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                answers: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
+                correct: 2
+            },
+            {
+                question: "What is the largest ocean on Earth?",
+                answers: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
+                correct: 3
+            },
+            {
+                question: "In which year did World War II end?",
+                answers: ["1944", "1945", "1946", "1947"],
+                correct: 1
+            },
+            {
+                question: "What is the chemical symbol for gold?",
+                answers: ["Go", "Gd", "Au", "Ag"],
+                correct: 2
+            },
+            {
+                question: "Which is the smallest country in the world?",
+                answers: ["Monaco", "Vatican City", "San Marino", "Liechtenstein"],
+                correct: 1
+            },
+            {
+                question: "What is the tallest mountain in the world?",
+                answers: ["K2", "Kangchenjunga", "Mount Everest", "Lhotse"],
+                correct: 2
+            },
+            {
+                question: "Which programming language is known as the 'language of the web'?",
+                answers: ["Python", "Java", "C++", "JavaScript"],
+                correct: 3
+            }
+        ];
+
+        // Game state
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let questions = [...quizData];
+
+        // DOM elements
+        const questionElement = document.getElementById('question');
+        const answersElement = document.getElementById('answers');
+        const currentQuestionElement = document.getElementById('current-question');
+        const totalQuestionsElement = document.getElementById('total-questions');
+        const currentScoreElement = document.getElementById('current-score');
+        const nextButton = document.getElementById('next-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const quizContent = document.getElementById('quiz-content');
+        const resultsElement = document.getElementById('results');
+        const finalScoreElement = document.getElementById('final-score');
+        const finalTotalElement = document.getElementById('final-total');
+        const performanceTextElement = document.getElementById('performance-text');
+        const resultsIconElement = document.getElementById('results-icon');
+        const restartButton = document.getElementById('restart-btn');
+
+        // Initialize quiz
+        function initQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedAnswer = null;
+            questions = shuffleArray([...quizData]);
+            
+            totalQuestionsElement.textContent = questions.length;
+            currentScoreElement.textContent = score;
+            
+            quizContent.style.display = 'block';
+            resultsElement.style.display = 'none';
+            
+            loadQuestion();
+        }
+
+        // Shuffle array function
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Load current question
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            questionElement.textContent = currentQuestion.question;
+            questionElement.classList.add('fade-in');
+            
+            currentQuestionElement.textContent = currentQuestionIndex + 1;
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            progressFill.style.width = progress + '%';
+            
+            // Load answers
+            answersElement.innerHTML = '';
+            currentQuestion.answers.forEach((answer, index) => {
+                const answerButton = document.createElement('button');
+                answerButton.className = 'answer-btn';
+                answerButton.textContent = answer;
+                answerButton.addEventListener('click', () => selectAnswer(index));
+                answersElement.appendChild(answerButton);
+            });
+            
+            selectedAnswer = null;
+            nextButton.classList.remove('active');
+            
+            // Remove fade-in class after animation
+            setTimeout(() => {
+                questionElement.classList.remove('fade-in');
+            }, 300);
+        }
+
+        // Select answer
+        function selectAnswer(answerIndex) {
+            if (selectedAnswer !== null) return;
+            
+            selectedAnswer = answerIndex;
+            const currentQuestion = questions[currentQuestionIndex];
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            
+            answerButtons.forEach((button, index) => {
+                button.disabled = true;
+                if (index === currentQuestion.correct) {
+                    button.classList.add('correct');
+                } else if (index === selectedAnswer) {
+                    button.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedAnswer === currentQuestion.correct) {
+                score++;
+                currentScoreElement.textContent = score;
+            }
+            
+            nextButton.classList.add('active');
+        }
+
+        // Next question
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Show results
+        function showResults() {
+            quizContent.style.display = 'none';
+            resultsElement.style.display = 'block';
+            
+            // Update progress bar to 100%
+            progressFill.style.width = '100%';
+            
+            finalScoreElement.textContent = score;
+            finalTotalElement.textContent = questions.length;
+            
+            const percentage = (score / questions.length) * 100;
+            
+            if (percentage >= 80) {
+                performanceTextElement.textContent = "Excellent! You're a quiz master!";
+                resultsIconElement.textContent = "🏆";
+            } else if (percentage >= 60) {
+                performanceTextElement.textContent = "Good job! You did well!";
+                resultsIconElement.textContent = "👏";
+            } else if (percentage >= 40) {
+                performanceTextElement.textContent = "Not bad! Keep practicing!";
+                resultsIconElement.textContent = "👍";
+            } else {
+                performanceTextElement.textContent = "Keep studying and try again!";
+                resultsIconElement.textContent = "📚";
+            }
+        }
+
+        // Event listeners
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', initQuiz);
+
+        // Start quiz
+        initQuiz();
+    </script>
+</body>
+</html>
+
+            
